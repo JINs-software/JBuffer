@@ -102,6 +102,10 @@ int RingBuffer::Dequeue(char* chpDest, int iSize)
 		frontOffset = dequeueSize - dirDequeueSize;
 	}
 
+	if (frontOffset == endOffset) {
+		frontOffset = endOffset = 0;
+	}
+
 	return dequeueSize;
 }
 
@@ -158,6 +162,11 @@ int RingBuffer::DirectMoveEnd(int iSize)
 	int freeSize = GetFreeSize();
 	moveCnt = (freeSize < moveCnt) ? freeSize : moveCnt;
 	endOffset = (endOffset + moveCnt) % capacity;
+
+	if (frontOffset == endOffset) {
+		frontOffset = endOffset = 0;
+	}
+
 	return moveCnt;
 }
 
@@ -167,6 +176,11 @@ int RingBuffer::DirectMoveFront(int iSize)
 	int useSize = GetUseSize();
 	moveCnt = (useSize < moveCnt) ? useSize : moveCnt;
 	frontOffset = (frontOffset + moveCnt) % capacity;
+
+	if (frontOffset == endOffset) {
+		frontOffset = endOffset = 0;
+	}
+
 	return moveCnt;
 }
 
