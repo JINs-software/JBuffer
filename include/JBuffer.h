@@ -76,11 +76,13 @@ public:
 	// Parameters: 없음.
 	// Return: (BYTE *) 버퍼 포인터.
 	BYTE* GetEnqueueBufferPtr(void);
+	void* GetEnqueueBufferVoidPtr(void);
 
 	// 버퍼의 RearPos 포인터 얻음.
 	// Parameters: 없음.
 	// Return: (BYTE *) 버퍼 포인터.
 	BYTE* GetDequeueBufferPtr(void);
+	void* GetDequeueBufferVoidPtr(void);
 
 	// [직렬화]
 	// 버퍼 디큐 (>>)
@@ -95,6 +97,16 @@ public:
 		}
 	}
 	// 버퍼 인큐 (<<)
+	//JBuffer& operator<<(BYTE src);
+	//template<typename T>
+	//JBuffer& operator<<(T src) {
+	//	if (GetFreeSize() >= sizeof(T)) {
+	//		Enqueue(reinterpret_cast<const BYTE*>(&src), sizeof(T));
+	//	}
+	//	else {
+	//		throw std::runtime_error("[ERR] Serialization error : Buffer is fulled!");
+	//	}
+	//}
 	template<typename T>
 	JBuffer& operator<<(const T& src) {
 		if (GetFreeSize() >= sizeof(T)) {
@@ -109,7 +121,7 @@ public:
 	// => 따라서 DirectReserve 라는 함수를 제공한다. 사용하는 측은 DirectEnqueueSize() 함수를 통해
 	//    연속된 예약 공간이 있는지 확인한다.
 	template<typename T>
-	T* Reserve() {
+	T* DirectReserve() {
 		T* ret = nullptr;
 		if (GetDirectEnqueueSize() >= sizeof(T)) {
 			ret = reinterpret_cast<T*>(GetEnqueueBufferPtr());

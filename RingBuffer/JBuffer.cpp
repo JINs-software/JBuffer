@@ -191,8 +191,18 @@ BYTE* JBuffer::GetEnqueueBufferPtr(void)
 	return &buffer[enqOffset];
 }
 
+void* JBuffer::GetEnqueueBufferVoidPtr(void)
+{
+	return reinterpret_cast<void*>(&buffer[enqOffset]);
+}
+
 BYTE* JBuffer::GetDequeueBufferPtr(void)
 {
 	return &buffer[deqOffset];
+}
+
+void* JBuffer::GetDequeueBufferVoidPtr(void)
+{
+	return reinterpret_cast<void*>(&buffer[deqOffset]);
 }
 

@@ -65,7 +65,7 @@ bool JBufferHandler::Dequeue(JBuffer& jbuff, stTEST_B& msg)
 	}
 }
 
-bool JBufferHandler::Enqueue(JBuffer& jbuff, const stTEST_B& msg)
-{
-	
-}
+//bool JBufferHandler::Enqueue(JBuffer& jbuff, const stTEST_B& msg)
+//{
+//	
+//}
