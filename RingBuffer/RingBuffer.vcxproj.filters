@@ -7,17 +7,8 @@
     <Filter Include="UpgradeRingBuffer">
       <UniqueIdentifier>{fb2f8d62-a533-4e51-9c46-92a6b6bd98d2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Common">
-      <UniqueIdentifier>{682ed6d3-383e-4fba-8386-6820fa2d91d1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="XML">
-      <UniqueIdentifier>{dd953471-9ec2-4a30-88a7-5f7cd64fdd01}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Types.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\JBuffer.h">
       <Filter>UpgradeRingBuffer</Filter>
     </ClInclude>
@@ -38,10 +29,5 @@
     <ClCompile Include="JBufferHandler.cpp">
       <Filter>UpgradeRingBuffer</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="PPD.xml">
-      <Filter>XML</Filter>
-    </Xml>
   </ItemGroup>
 </Project>

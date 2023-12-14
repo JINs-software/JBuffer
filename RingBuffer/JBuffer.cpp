@@ -40,12 +40,12 @@ void JBuffer::Resize(UINT size)
 	}
 }
 
-UINT JBuffer::GetBufferSize(void)
+UINT JBuffer::GetBufferSize(void) const
 {
 	return capacity;
 }
 
-UINT JBuffer::GetUseSize(void)
+UINT JBuffer::GetUseSize(void) const
 {
 	if (enqOffset >= deqOffset) {
 		return enqOffset - deqOffset;
@@ -55,7 +55,7 @@ UINT JBuffer::GetUseSize(void)
 	}
 }
 
-UINT JBuffer::GetFreeSize(void)
+UINT JBuffer::GetFreeSize(void) const
 {
 	return (capacity - 1) - GetUseSize();
 }

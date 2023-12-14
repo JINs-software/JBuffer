@@ -27,13 +27,13 @@ public:
 
 	void Resize(UINT size);
 
-	UINT	GetBufferSize(void);
+	UINT	GetBufferSize(void) const;
 
 	// 현재 사용중인 용량 얻기.
-	UINT	GetUseSize(void);
+	UINT	GetUseSize(void) const;
 
 	// 현재 버퍼에 남은 용량 얻기. 
-	UINT	GetFreeSize(void);
+	UINT	GetFreeSize(void) const;
 
 	// WritePos 에 데이타 넣음.
 	// Parameters: (BYTE *)데이타 포인터. (UINT)크기. 
