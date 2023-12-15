@@ -128,6 +128,32 @@ UINT JBuffer::Peek(OUT BYTE* dest, UINT uiSize)
 	return peekSize;
 }
 
+bool JBuffer::Peek(UINT offset, OUT BYTE* dest, UINT uiSize)
+{
+	UINT tempSize = offset + uiSize;
+	BYTE* temp = new BYTE[tempSize];
+	UINT useSize = GetUseSize();
+	if (useSize < tempSize) {
+		return false;
+	}
+	
+	UINT dirDequeueSize = GetDirectDequeueSize();
+
+	if (dirDequeueSize >= tempSize) {
+		memcpy(temp, GetDequeueBufferPtr(), tempSize);
+	}
+	else {
+		memcpy(temp, GetDequeueBufferPtr(), dirDequeueSize);
+		memcpy(&temp[dirDequeueSize], buffer, tempSize - dirDequeueSize);
+	}
+
+	memcpy(dest, &temp[offset], uiSize);
+
+	delete temp;
+	
+	return true;
+}
+
 void JBuffer::ClearBuffer(void)
 {
 	deqOffset = enqOffset = 0;
