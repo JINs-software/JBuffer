@@ -81,6 +81,7 @@ void PrintMsg(stMsg3 msg) {
 	std::cout << "msg.dummy.ll: " << msg.dummy.ll << std::endl;
 }
 
+/*
 int main() {
 	vector<int> vec;
 	vector<long long> vec2(10);
@@ -106,7 +107,7 @@ int main() {
 	//stTestMsg2 deqMsg;
 	//JBufferHandler::Dequeue_TestMsg(ringBuff, deqMsg);
 }
-
+*/
 /*
 int main() {
 
@@ -280,7 +281,7 @@ int main() {
 	}
 }
 */
-/*
+
 int main() {
 	// 핸들을 얻어오기
 	HWND console = GetConsoleWindow();
@@ -329,7 +330,7 @@ int main() {
 		}
 		else {
 			// DirectEnqueue 활용
-			int dirEnqueueSize = ringBuff.DirectEnqueueSize();
+			int dirEnqueueSize = ringBuff.GetDirectEnqueueSize();
 			if (dirEnqueueSize < writeLen) {
 				memcpy(ringBuff.GetEnqueueBufferPtr(), writeBuf, dirEnqueueSize);
 				ringBuff.DirectMoveEnqueueOffset(dirEnqueueSize);
@@ -368,7 +369,7 @@ int main() {
 			}
 		}
 		else {
-			int dirDequeueSize = ringBuff.DirectDequeueSize();
+			int dirDequeueSize = ringBuff.GetDirectDequeueSize();
 			if (dirDequeueSize < readLen) {
 				memcpy(readBuf, ringBuff.GetDequeueBufferPtr(), dirDequeueSize);
 				ringBuff.DirectMoveDequeueOffset(dirDequeueSize);
@@ -395,4 +396,3 @@ int main() {
 		//ringBuff.Resize(BuffSize);
 	}
 }
-*/
