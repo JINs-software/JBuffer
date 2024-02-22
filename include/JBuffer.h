@@ -18,7 +18,7 @@ class JBuffer
 private:
 	UINT		enqOffset;
 	UINT		deqOffset;
-	BYTE*		buffer;
+	BYTE* buffer;
 	UINT		capacity;
 
 public:
@@ -96,26 +96,28 @@ public:
 
 		if (dirDequeueSize >= dequeueSize) {
 			memcpy(dest, GetDequeueBufferPtr(), dequeueSize);
-//#ifdef _DEBUG
-//			memset(GetDequeueBufferPtr(), 0xff, dequeueSize);
-//#endif // DEBUG
+			//#ifdef _DEBUG
+			//			memset(GetDequeueBufferPtr(), 0xff, dequeueSize);
+			//#endif // DEBUG
 			deqOffset = (deqOffset + dequeueSize) % capacity;
 		}
 		else {
 			memcpy(dest, GetDequeueBufferPtr(), dirDequeueSize);
-//#ifdef _DEBUG
-//			memset(GetDequeueBufferPtr(), 0xff, dirDequeueSize);
-//#endif // DEBUG
+			//#ifdef _DEBUG
+			//			memset(GetDequeueBufferPtr(), 0xff, dirDequeueSize);
+			//#endif // DEBUG
 			memcpy(&dest[dirDequeueSize], buffer, dequeueSize - dirDequeueSize);
-//#ifdef _DEBUG
-//			memset(buffer, 0xff, dequeueSize - dirDequeueSize);
-//#endif // DEBUG
+			//#ifdef _DEBUG
+			//			memset(buffer, 0xff, dequeueSize - dirDequeueSize);
+			//#endif // DEBUG
 			deqOffset = dequeueSize - dirDequeueSize;
 		}
 
+#if !defined(JBUFF_DIRPTR_MANUAL_RESET)
 		if (deqOffset == enqOffset) {
 			deqOffset = enqOffset = 0;
 		}
+#endif
 
 		return dequeueSize;
 	}
@@ -208,10 +210,15 @@ public:
 		moveCnt = (freeSize < moveCnt) ? freeSize : moveCnt;
 		enqOffset = (enqOffset + moveCnt) % capacity;
 
+#if !defined(JBUFF_DIRPTR_MANUAL_RESET)
 		if (deqOffset == enqOffset) {
 			deqOffset = enqOffset = 0;
 		}
-
+#else
+		if (enqOffset == capacity - 1) {
+			enqOffset = 0;
+		}
+#endif
 		return moveCnt;
 	}
 	inline UINT	DirectMoveDequeueOffset(UINT uiSize) {
@@ -220,9 +227,15 @@ public:
 		moveCnt = (useSize < moveCnt) ? useSize : moveCnt;
 		deqOffset = (deqOffset + moveCnt) % capacity;
 
+#if !defined(JBUFF_DIRPTR_MANUAL_RESET)
 		if (deqOffset == enqOffset) {
 			deqOffset = enqOffset = 0;
 		}
+#else
+		if (deqOffset == capacity - 1) {
+			deqOffset = 0;
+		}
+#endif
 
 		return moveCnt;
 	}
