@@ -227,6 +227,10 @@ public:
 		return moveCnt;
 	}
 
+	inline BYTE* GetBeginBufferPtr(void) {
+		return buffer;
+	}
+
 	// 버퍼의 Front 포인터 얻음.
 	// Parameters: 없음.
 	// Return: (BYTE *) 버퍼 포인터.
