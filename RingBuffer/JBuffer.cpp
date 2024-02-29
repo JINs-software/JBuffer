@@ -2,20 +2,24 @@
 
 #include <memory>
 
-JBuffer::JBuffer(UINT capacity)
+JBuffer::JBuffer(UINT _capacity)
+	: deqOffset(0), enqOffset(0), capacity(_capacity + 1)
 {
-	deqOffset = enqOffset = 0;
-	this->capacity = capacity + 1;
-	buffer = new BYTE[this->capacity];
+	buffer = new BYTE[capacity];
 //#ifdef _DEBUG
-//	memset(buffer, 0xff, this->capacity);
+//	memset(buffer, 0xff, capacity);
 //#endif // DEBUG
-
 }
+JBuffer::JBuffer(UINT _capacity, BYTE* _buffer) 
+	// 링버퍼의 실질적인 용량은 capacity - 1로 보정됨
+	: deqOffset(0), enqOffset(0), capacity(_capacity), buffer(_buffer), isExternalBuffer(true)
+{}
 
 JBuffer::~JBuffer()
 {
-	delete[] buffer;
+	if (!isExternalBuffer) {
+		delete[] buffer;
+	}	
 }
 
 //void JBuffer::Resize(UINT size)

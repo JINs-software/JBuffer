@@ -16,13 +16,16 @@ typedef unsigned int        UINT;
 class JBuffer
 {
 private:
-	UINT		enqOffset;
-	UINT		deqOffset;
-	BYTE* buffer;
-	UINT		capacity;
+	UINT	enqOffset;
+	UINT	deqOffset;
+	UINT	capacity;
+
+	BYTE*	buffer;
+	bool	isExternalBuffer = false;
 
 public:
-	JBuffer(UINT capacity);
+	JBuffer(UINT _capacity);
+	JBuffer(UINT _capacity, BYTE* _buffer);	// 링버퍼의 실질적인 용량은 capacity - 1로 보정됨
 	~JBuffer();
 
 	inline void Resize(UINT size) {
@@ -47,7 +50,7 @@ public:
 	}
 
 	inline UINT	GetBufferSize(void) const {
-		return capacity;
+		return capacity - 1;
 	}
 	// 현재 사용중인 용량 얻기.
 	inline UINT	GetUseSize(void) const {
@@ -58,10 +61,9 @@ public:
 			return (enqOffset)+(capacity - deqOffset);
 		}
 	}
-
 	// 현재 버퍼에 남은 용량 얻기. 
 	inline UINT	GetFreeSize(void) const {
-		return (capacity - 1) - GetUseSize();
+		return GetBufferSize() - GetUseSize();
 	}
 
 	// WritePos 에 데이타 넣음.
@@ -143,26 +145,30 @@ public:
 	template<typename T>
 	inline UINT	Peek(OUT T* dest) { return Peek(reinterpret_cast<BYTE*>(dest), sizeof(T)); }
 	inline bool	Peek(UINT offset, OUT BYTE* dest, UINT uiSize) {
-		UINT tempSize = offset + uiSize;
-		BYTE* temp = new BYTE[tempSize];
 		UINT useSize = GetUseSize();
-		if (useSize < tempSize) {
+		UINT neededSize = offset + uiSize;
+		if (useSize < neededSize) {
 			return false;
 		}
 
 		UINT dirDequeueSize = GetDirectDequeueSize();
-
-		if (dirDequeueSize >= tempSize) {
-			memcpy(temp, GetDequeueBufferPtr(), tempSize);
+		if (dirDequeueSize < offset) {
+			memcpy(dest, buffer + (offset - dirDequeueSize), uiSize);
+		}
+		else if(dirDequeueSize == offset) {
+			memcpy(dest, buffer, uiSize);
 		}
 		else {
-			memcpy(temp, GetDequeueBufferPtr(), dirDequeueSize);
-			memcpy(&temp[dirDequeueSize], buffer, tempSize - dirDequeueSize);
+			BYTE* deqPtr = GetDequeueBufferPtr();
+			if (dirDequeueSize >= neededSize) {
+				memcpy(dest, deqPtr + offset, uiSize);
+			}
+			else {
+				size_t copySize = dirDequeueSize - offset;
+				memcpy(dest, deqPtr + offset, copySize);
+				memcpy(dest + copySize, buffer, uiSize - copySize);
+			}
 		}
-
-		memcpy(dest, &temp[offset], uiSize);
-
-		delete temp;
 
 		return true;
 	}
