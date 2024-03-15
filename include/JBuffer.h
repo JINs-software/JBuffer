@@ -75,10 +75,11 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////
 	// 현재 버퍼에 남은 용량 얻기. 
 	inline UINT	GetFreeSize(void) const {
-		return GetBufferSize() - GetUseSize();
+		return capacity - GetUseSize();
 	}
 	////////////////////////////////////////////////////////////////////////////////////////
 
+	
 
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -235,9 +236,10 @@ public:
 		UINT dirDequeueSize = GetDirectDequeueSize();
 
 		if (dirDequeueSize >= moveSize) {
-			deqOffset = (deqOffset + moveSize) % capacity;
-			if (deqOffset == 0 && enqOffset == capacity) {
+			deqOffset = (deqOffset + moveSize) % (capacity + 1);
+			if (deqOffset == capacity && enqOffset == capacity) {
 				enqOffset = 0;
+				deqOffset = 0;
 			}
 		}
 		else {
