@@ -149,6 +149,9 @@ public:
 			memcpy(GetEnqueueBufferPtr(), data, dirEnqueueSize);
 			memcpy(buffer, &data[dirEnqueueSize], enqueueSize - dirEnqueueSize);
 			enqOffset = enqueueSize - dirEnqueueSize;
+			if (enqOffset == 0) {
+				deqOffset = 0;
+			}
 		}
 
 		return enqueueSize;
@@ -164,30 +167,40 @@ public:
 	// - Return: (UINT)가져온 크기.
 	inline UINT	Dequeue(BYTE* dest, UINT uiSize) {
 		UINT useSize = GetUseSize();
-		UINT dequeueSize = (useSize >= uiSize) ? uiSize : useSize;
+		UINT moveSize = (useSize >= uiSize) ? uiSize : useSize;
 		UINT dirDequeueSize = GetDirectDequeueSize();
 
-		if (dirDequeueSize >= dequeueSize) {
-			memcpy(dest, GetDequeueBufferPtr(), dequeueSize);
+		if (dirDequeueSize >= moveSize) {
+			memcpy(dest, GetDequeueBufferPtr(), moveSize);
 			//#ifdef _DEBUG
 			//			memset(GetDequeueBufferPtr(), 0xff, dequeueSize);
 			//#endif // DEBUG
 			
-			deqOffset = (deqOffset + dequeueSize) % capacity;
-			if (deqOffset == 0 && enqOffset == capacity) {
-				enqOffset = 0;
+			deqOffset = (deqOffset + moveSize) % (capacity + 1);
+			if (deqOffset == capacity) {
+				if (enqOffset == capacity) {
+					enqOffset = 0;
+				}
+				deqOffset = 0;
 			}
+			//if (deqOffset == capacity && enqOffset == capacity) {
+			//	enqOffset = 0;
+			//	deqOffset = 0;
+			//}
 		}
 		else {
 			memcpy(dest, GetDequeueBufferPtr(), dirDequeueSize);
 			//#ifdef _DEBUG
 			//			memset(GetDequeueBufferPtr(), 0xff, dirDequeueSize);
 			//#endif // DEBUG
-			memcpy(&dest[dirDequeueSize], buffer, dequeueSize - dirDequeueSize);
+			memcpy(&dest[dirDequeueSize], buffer, moveSize - dirDequeueSize);
 			//#ifdef _DEBUG
 			//			memset(buffer, 0xff, dequeueSize - dirDequeueSize);
 			//#endif // DEBUG
-			deqOffset = dequeueSize - dirDequeueSize;
+			deqOffset = moveSize - dirDequeueSize;
+			//if (deqOffset == 0) {
+			//	enqOffset = 0;
+			//}
 		}
 
 #if !defined(JBUFF_DIRPTR_MANUAL_RESET)
@@ -200,7 +213,7 @@ public:
 		//}
 #endif
 
-		return dequeueSize;
+		return moveSize;
 	}
 	////////////////////////////////////////////////////////////////////////////////////////
 
@@ -226,6 +239,9 @@ public:
 		}
 		else {
 			enqOffset = moveSize - dirEnqueueSize;
+			if (enqOffset == 0) {
+				deqOffset = 0;
+			}
 		}
 
 		return moveSize;
@@ -237,13 +253,22 @@ public:
 
 		if (dirDequeueSize >= moveSize) {
 			deqOffset = (deqOffset + moveSize) % (capacity + 1);
-			if (deqOffset == capacity && enqOffset == capacity) {
-				enqOffset = 0;
+			if (deqOffset == capacity) {
+				if (enqOffset == capacity) {
+					enqOffset = 0;
+				}
 				deqOffset = 0;
 			}
+			//if (deqOffset == capacity && enqOffset == capacity) {
+			//	enqOffset = 0;
+			//	deqOffset = 0;
+			//}
 		}
 		else {
-			deqOffset = moveSize - dirDequeueSize;
+			deqOffset = moveSize - dirDequeueSize;				// <------------- 오류
+			//if (deqOffset == 0) {
+			//	enqOffset = 0;
+			//}
 		}
 
 #if !defined(JBUFF_DIRPTR_MANUAL_RESET)
