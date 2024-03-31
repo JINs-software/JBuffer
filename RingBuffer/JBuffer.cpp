@@ -3,12 +3,10 @@
 #include <memory>
 
 JBuffer::JBuffer(UINT _capacity)
-	: deqOffset(0), enqOffset(0), capacity(_capacity)
+	: deqOffset(0), enqOffset(0), capacity(_capacity), isExternalBuffer(false), internalCapacity(capacity + 1)
 {
-	buffer = new BYTE[capacity + 1];
-//#ifdef _DEBUG
-//	memset(buffer, 0xff, capacity);
-//#endif // DEBUG
+	//buffer = new BYTE[capacity + 1];
+	buffer = new BYTE[internalCapacity];
 }
 JBuffer::JBuffer(UINT _capacity, BYTE* _buffer) 
 	: deqOffset(0), enqOffset(0), capacity(_capacity - 1), buffer(_buffer), isExternalBuffer(true)
