@@ -250,7 +250,7 @@ public:
 			memcpy(dest, GetDequeueBufferPtr(), dirDequeueSize);
 			memcpy(&dest[dirDequeueSize], buffer, dequeueSize - dirDequeueSize);
 		}
-		deqOffset = (deqOffset + dirDequeueSize) % internalCapacity;
+		deqOffset = (deqOffset + dequeueSize) % internalCapacity;
 
 #if !defined(JBUFF_DIRPTR_MANUAL_RESET)
 		if (deqOffset == enqOffset) {
