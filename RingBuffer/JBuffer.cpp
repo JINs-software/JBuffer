@@ -2,6 +2,10 @@
 
 #include <memory>
 
+JBuffer::JBuffer() 
+{
+	JBuffer(JBUFFER_DEFAULT_CAPACITY);
+}
 JBuffer::JBuffer(UINT _capacity)
 	: deqOffset(0), enqOffset(0), capacity(_capacity), isExternalBuffer(false), internalCapacity(capacity + 1)
 {

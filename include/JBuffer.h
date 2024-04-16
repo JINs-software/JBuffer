@@ -13,6 +13,8 @@ typedef unsigned char       BYTE;
 typedef int                 INT;
 typedef unsigned int        UINT;
 
+#define JBUFFER_DEFAULT_CAPACITY 20000
+
 class JBuffer
 {
 private:
@@ -31,6 +33,7 @@ public:
 	// 생성자 호출 시 전달하는 _capacity 크기보다 내부 버퍼는 1 바이트 더 크게 생성된다. 
 	// 이는 내부 오프셋 제어와 오프셋을 통한 버퍼 사용 크기, 여분 크기 산출의 편의성을 위해서이다.
 	// 따라서 외부에서 버퍼를 주입하는 방식으로 생성하는 링버퍼의 실질적 용량은 1 바이트 더 작다.
+	JBuffer();
 	JBuffer(UINT _capacity);					// new 동적 할당을 통해 내부 버퍼 생성
 	JBuffer(UINT _capacity, BYTE* _buffer);		// 외부에서 링버퍼가 랩핑할 내부 버퍼 주입, 기본 Resize 함수 사용 불가
 	~JBuffer();
