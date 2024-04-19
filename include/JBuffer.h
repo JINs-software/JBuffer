@@ -37,6 +37,9 @@ public:
 	JBuffer(UINT _capacity);					// new 동적 할당을 통해 내부 버퍼 생성
 	JBuffer(UINT _capacity, BYTE* _buffer);		// 외부에서 링버퍼가 랩핑할 내부 버퍼 주입, 기본 Resize 함수 사용 불가
 	~JBuffer();
+
+	void Init(UINT _capacity);
+	void Init(UINT _capacity, BYTE* _buffer);
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	UINT GetEnqOffset() {

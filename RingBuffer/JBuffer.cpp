@@ -7,13 +7,13 @@ JBuffer::JBuffer()
 	JBuffer(JBUFFER_DEFAULT_CAPACITY);
 }
 JBuffer::JBuffer(UINT _capacity)
-	: deqOffset(0), enqOffset(0), capacity(_capacity), isExternalBuffer(false), internalCapacity(capacity + 1)
+	: deqOffset(0), enqOffset(0), capacity(_capacity), internalCapacity(capacity + 1), isExternalBuffer(false)
 {
 	//buffer = new BYTE[capacity + 1];
 	buffer = new BYTE[internalCapacity];
 }
 JBuffer::JBuffer(UINT _capacity, BYTE* _buffer) 
-	: deqOffset(0), enqOffset(0), capacity(_capacity - 1), buffer(_buffer), isExternalBuffer(true)
+	: deqOffset(0), enqOffset(0), capacity(_capacity - 1), internalCapacity(capacity), isExternalBuffer(true), buffer(_buffer)
 {}
 
 JBuffer::~JBuffer()
@@ -21,6 +21,23 @@ JBuffer::~JBuffer()
 	if (!isExternalBuffer) {
 		delete[] buffer;
 	}	
+}
+
+void JBuffer::Init(UINT _capacity) {
+	deqOffset = 0;
+	enqOffset = 0;
+	capacity = _capacity;
+	internalCapacity = capacity + 1;
+	isExternalBuffer = false;
+	buffer = new BYTE[internalCapacity];
+}
+void JBuffer::Init(UINT _capacity, BYTE* _buffer) {
+	deqOffset = 0;
+	enqOffset = 0;
+	capacity = _capacity - 1;
+	internalCapacity = capacity;
+	isExternalBuffer = true;
+	buffer = _buffer;
 }
 
 bool JBuffer::Resize(UINT _size) {
