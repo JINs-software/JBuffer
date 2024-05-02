@@ -13,7 +13,7 @@ typedef unsigned char       BYTE;
 typedef int                 INT;
 typedef unsigned int        UINT;
 
-#define JBUFFER_DEFAULT_CAPACITY 100
+#define JBUFFER_DEFAULT_CAPACITY 1000
 
 class JBuffer
 {
@@ -82,6 +82,9 @@ public:
 
 	inline BYTE* GetBeginBufferPtr(void) {
 		return buffer;
+	}
+	inline BYTE* GetBufferPtr(UINT offset) {
+		return &buffer[offset];
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -411,6 +414,8 @@ public:
 		else {
 			throw std::runtime_error("[ERR] Serialization error : Buffer contains data size smaller than the size of dest type!");
 		}
+
+		return *this;
 	}
 	// 버퍼 인큐 (<<)
 	//JBuffer& operator<<(BYTE src);
@@ -431,6 +436,8 @@ public:
 		else {
 			throw std::runtime_error("[ERR] Serialization error : Buffer is fulled!");
 		}
+
+		return *this;
 	}
 	// 버퍼 공간 예약
 	// => 링 버퍼 특성상 연속적인 메모리 주소 공간 반환을 보장할 수 없다.
