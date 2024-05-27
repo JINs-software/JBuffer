@@ -15,6 +15,11 @@ JBuffer::JBuffer(UINT _capacity, BYTE* _buffer)
 	: deqOffset(0), enqOffset(0), capacity(_capacity - 1), internalCapacity(capacity), isExternalBuffer(true), buffer(_buffer)
 {}
 
+JBuffer::JBuffer(JBuffer* jbuff)
+{
+	*this = *jbuff;
+}
+
 JBuffer::~JBuffer()
 {
 	if (!isExternalBuffer) {
