@@ -17,7 +17,7 @@ typedef unsigned int        UINT;
 
 class JBuffer
 {
-private:
+protected:
 	UINT	enqOffset;
 	UINT	deqOffset;
 	UINT	capacity;
@@ -452,5 +452,18 @@ public:
 			DirectMoveEnqueueOffset(sizeof(T));
 		}
 		return ret;
+	}
+};
+
+class JSerBuffer : public JBuffer
+{
+public:
+	JSerBuffer(JBuffer& ringbuff, UINT length, bool isFull = false)
+		: JBuffer(ringbuff)
+	{
+		isExternalBuffer = true;
+		if (isFull) {
+			enqOffset = (deqOffset + length) % internalCapacity;
+		}
 	}
 };
