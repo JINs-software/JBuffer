@@ -13,7 +13,7 @@ typedef unsigned char       BYTE;
 typedef int                 INT;
 typedef unsigned int        UINT;
 
-#define JBUFFER_DEFAULT_CAPACITY 10000
+#define JBUFFER_DEFAULT_CAPACITY 5000
 
 class JBuffer
 {
