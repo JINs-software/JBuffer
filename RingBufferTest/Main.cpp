@@ -282,6 +282,7 @@ int main() {
 }
 */
 
+/*
 int main() {
 	// 핸들을 얻어오기
 	HWND console = GetConsoleWindow();
@@ -394,5 +395,142 @@ int main() {
 		// 루프마다 RingBuffer 크기가 1씩 증가
 		//BuffSize++;
 		//ringBuff.Resize(BuffSize);
+	}
+}
+*/
+
+/*
+template<typename... Args>
+JBuffer* CreateJBuffer(Args... args) {
+	return new JBuffer(args...);
+}
+
+int main() {
+	JBuffer* buffer = CreateJBuffer(1000);
+
+	std::cout << "buffer" << std::endl;
+}
+*/
+
+//WCHAR wchars1[] = L"가나다라마바사";
+//WCHAR wchars2[] = L"Talk That Talk That Talk That";
+//WCHAR wchars3[] = L"그만해 그만해 제발";
+//WCHAR wchars4[] = L"어떻게 네가 이럴 수 있는지 내가 이렇게 아파야 하는지";
+//WCHAR wchars5[] = L"내 생각을 넌 하기는 한건지 내가 우스운지";
+//WCHAR wchars6[] = L"그래 들어줄게 어차피 다 거짓이겠지만";
+//WCHAR wchars7[] = L"그래 웃어줄게 네가 놀던 그 여자들처럼 그렇게";
+//WCHAR wchars8[] = L"처음부터 다 똑같은 거짓말 진심이었단 말은 하지도 마";
+//WCHAR wchars9[] = L"이젠 널 믿기 힘들 것 같아 나.내가 우스운지";
+//WCHAR wchars10[] = L"그래 들어줄게 알고 있는 변명일 테지만";
+//WCHAR wchars11[] = L"그래 웃어줄게 이제 그만 꺼져줄래 상관 안 할게";
+//WCHAR wchars12[] = L"(Talk that) 말도 안 되는 소리 해봐";
+//WCHAR wchars13[] = L"(Talk that) 믿을 거란 생각하지 마";
+//WCHAR wchars14[] = L"(Talk that) 네가 한 말 모두 헛소리 소리 소리니까";
+//WCHAR wchars15[] = L"(Talk that) 있는대로 내게 말해봐";
+//WCHAR wchars16[] = L"(Talk that) 나를 그만 가지고 놀아";
+//WCHAR wchars17[] = L"(Talk that) 내게 한 말 전부 헛소리 소리 소리 같아 너..";
+//WCHAR wchars18[] = L"내게 또 말을 하지만 듣기 싫어 그만해 다";
+//WCHAR wchars19[] = L"하태일이 고~";
+//WCHAR wchars20[] = L"정말 넌 다 잊었더라";
+//WCHAR wchars21[] = L"반갑게 날 보는 너의 얼굴 보니";
+//WCHAR wchars22[] = L"그제야 어렴풋이 아파오더라";
+//WCHAR wchars23[] = L"새 살 차오르지 못한 상처가";
+//WCHAR wchars24[] = L"눈물은 흐르질 않더라";
+//WCHAR wchars25[] = L"이별이라 하는 게 대단치도 못해서";
+//WCHAR wchars26[] = L"이렇게 보잘것없어서";
+//WCHAR wchars27[] = L"좋은 이별이란 거, 결국 세상엔 없는 일이라는 걸";
+//WCHAR wchars28[] = L"알았다면 그때 차라리 다 울어둘 걸";
+//WCHAR wchars29[] = L"그때 이미 나라는 건 네겐 끝이었다는 건";
+//WCHAR wchars30[] = L"나만 몰랐었던 이야기";
+
+
+CHAR chr1[] = "Twinkle, twinkle, little star,";
+CHAR chr2[] = "How I wonder what you are!";
+CHAR chr3[] = "Up above the world so high,";
+CHAR chr4[] = "Like a diamond in the sky.";
+CHAR chr5[] = "Twinkle, twinkle, little star,";
+CHAR chr6[] = "How I wonder what you are!";
+
+CHAR c1[] = "Twink";
+CHAR c2[] = "le, twi";
+CHAR c3[] = "nkle, litt";
+CHAR c4[] = "le star,";
+CHAR c5[] = "How I wonder w";
+CHAR c6[] = "hat you are!";
+CHAR c7[] = "Up above the world so high,\0Like a diam";
+CHAR c8[] = "ond in the sky.";
+CHAR c9[] = "Twinkle, twinkle, little ";
+CHAR c10[] = "star,\0How I wonder what you are!";
+
+
+int main() {
+	// 로케일 설정
+	std::locale::global(std::locale(""));
+	std::wcout.imbue(std::locale());
+
+	JBuffer jbuff1(sizeof(chr1));
+	jbuff1.Enqueue((BYTE*)chr1, sizeof(chr1));
+	JBuffer jbuff2(sizeof(chr2));
+	jbuff2.Enqueue((BYTE*)chr2, sizeof(chr2));
+	JBuffer jbuff3(sizeof(chr3));
+	jbuff3.Enqueue((BYTE*)chr3, sizeof(chr3));
+	JBuffer jbuff4(sizeof(chr4));
+	jbuff4.Enqueue((BYTE*)chr4, sizeof(chr4));
+	JBuffer jbuff5(sizeof(chr5));
+	jbuff5.Enqueue((BYTE*)chr5, sizeof(chr5));
+	JBuffer jbuff6(sizeof(chr6));
+	jbuff6.Enqueue((BYTE*)chr6, sizeof(chr6));
+	
+	JSerialBuffer jserbuff;
+	jserbuff.Serialize(jbuff1, jbuff1.GetUseSize(), true);
+	jserbuff.Serialize(jbuff2, jbuff2.GetUseSize(), true);
+	jserbuff.Serialize(jbuff3, jbuff3.GetUseSize(), true);
+	jserbuff.Serialize(jbuff4, jbuff4.GetUseSize(), true);
+	jserbuff.Serialize(jbuff5, jbuff5.GetUseSize(), true);
+	jserbuff.Serialize(jbuff6, jbuff6.GetUseSize(), true);
+
+	/*
+	JBuffer jbuff1(sizeof(chr1));
+	JBuffer jbuff2(sizeof(chr2));
+	JBuffer jbuff3(sizeof(chr3));
+	JBuffer jbuff4(sizeof(chr4));
+	JBuffer jbuff5(sizeof(chr5));
+	JBuffer jbuff6(sizeof(chr6));
+
+	JSerialBuffer jserbuff;
+	jserbuff.Serialize(jbuff1, jbuff1.GetFreeSize(), false);
+	jserbuff.Serialize(jbuff2, jbuff2.GetFreeSize(), false);
+	jserbuff.Serialize(jbuff3, jbuff3.GetFreeSize(), false);
+	jserbuff.Serialize(jbuff4, jbuff4.GetFreeSize(), false);
+	jserbuff.Serialize(jbuff5, jbuff5.GetFreeSize(), false);
+	jserbuff.Serialize(jbuff6, jbuff6.GetFreeSize(), false);
+
+	jserbuff.Enqueue((BYTE*)c1, sizeof(c1)-1);
+	jserbuff.Enqueue((BYTE*)c2, sizeof(c2)-1);
+	jserbuff.Enqueue((BYTE*)c3, sizeof(c3)-1);
+	jserbuff.Enqueue((BYTE*)c4, sizeof(c4));
+	jserbuff.Enqueue((BYTE*)c5, sizeof(c5)-1);
+	jserbuff.Enqueue((BYTE*)c6, sizeof(c6));
+	jserbuff.Enqueue((BYTE*)c7, sizeof(c7)-1);
+	jserbuff.Enqueue((BYTE*)c8, sizeof(c8));
+	jserbuff.Enqueue((BYTE*)c9, sizeof(c9)-1);
+	jserbuff.Enqueue((BYTE*)c10, sizeof(c10));
+	*/
+
+	while (jserbuff.GetUseSize() > 0) {
+		UINT useSize = jserbuff.GetUseSize();
+		int randLen = (rand() % jserbuff.GetUseSize()) + 1;
+		CHAR* chs = new CHAR[randLen + 1];
+		memset(chs, 0, randLen + 1);
+		chs[randLen] = 0xFF;
+		jserbuff.Dequeue((BYTE*)chs, randLen);
+
+		for (int i = 0; i < randLen; i++) {
+			if (chs[i] == 0) {
+				chs[i] = '\n';
+			}
+		}
+		chs[randLen] = NULL;
+		std::cout << chs;
 	}
 }

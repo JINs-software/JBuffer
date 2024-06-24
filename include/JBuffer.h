@@ -1,5 +1,7 @@
 #pragma once
 #include <stdexcept>
+//#include <queue>
+#include <list>
 
 #ifndef IN
 #define IN
@@ -18,13 +20,13 @@ typedef unsigned int        UINT;
 class JBuffer
 {
 protected:
-	UINT	enqOffset;
-	UINT	deqOffset;
-	UINT	capacity;
+	UINT	m_EnqOffset;
+	UINT	m_DeqOffset;
+	UINT	m_Capacity;
 
-	BYTE*	buffer;
-	UINT	internalCapacity;
-	bool	isExternalBuffer;
+	BYTE*	m_Buffer;
+	UINT	m_InternalCapacity;
+	bool	m_IsExternalBuffer;
 
 public:
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,35 +36,41 @@ public:
 	// 이는 내부 오프셋 제어와 오프셋을 통한 버퍼 사용 크기, 여분 크기 산출의 편의성을 위해서이다.
 	// 따라서 외부에서 버퍼를 주입하는 방식으로 생성하는 링버퍼의 실질적 용량은 1 바이트 더 작다.
 	JBuffer();
-	JBuffer(UINT _capacity);					// new 동적 할당을 통해 내부 버퍼 생성
-	JBuffer(UINT _capacity, BYTE* _buffer);		// 외부에서 링버퍼가 랩핑할 내부 버퍼 주입, 기본 Resize 함수 사용 불가
+	JBuffer(UINT capacity);						// new 동적 할당을 통해 내부 버퍼 생성
+	JBuffer(UINT capacity, BYTE* buffer);		// 외부에서 링버퍼가 랩핑할 내부 버퍼 주입, 기본 Resize 함수 사용 불가
 	JBuffer(JBuffer* jbuff);
+	//JBuffer(const JBuffer& other, UINT length, bool dequeuing);
 	~JBuffer();
 
 	void Init(UINT _capacity);
 	void Init(UINT _capacity, BYTE* _buffer);
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// [Slice]
+	JBuffer SliceBuffer(UINT length, bool dequeuing);
+	friend JBuffer SliceBuffer(const JBuffer& juff, UINT length, bool dequeuing);
+
 	UINT GetEnqOffset() {
-		return enqOffset;
+		return m_EnqOffset;
 	}
 	UINT GetDeqOffset() {
-		return deqOffset;
+		return m_DeqOffset;
 	}
 	bool SetEnqOffset(UINT offset) {
-		if (offset > capacity) {
+		if (offset > m_Capacity) {
 			return false;
 		}
 
-		enqOffset = offset;
+		m_EnqOffset = offset;
 		return true;
 	}
 	bool SetDeqOffset(UINT offset) {
-		if (offset > capacity) {
+		if (offset > m_Capacity) {
 			return false;
 		}
 
-		deqOffset = offset;
+		m_DeqOffset = offset;
 		return true;
 	}
 
@@ -71,21 +79,22 @@ public:
 	// 
 	// new 동적 할당을 통해 생성된 내부 버퍼를 가진 링퍼버의 경우 버퍼 크기 Resizing 가능
 	// 기존 버퍼 크기보다 큰 크기로 사이즈 변경
-	bool Resize(UINT _size);
+	//bool Resize(UINT _size);
+	// => 수정 필요
 	////////////////////////////////////////////////////////////////////////////////////////
 
 	// 버퍼의 모든 데이타 삭제.
 	// Parameters: 없음.
 	// Return: 없음.
 	inline void	ClearBuffer(void) {
-		deqOffset = enqOffset = 0;
+		m_DeqOffset = m_EnqOffset = 0;
 	}
 
 	inline BYTE* GetBeginBufferPtr(void) {
-		return buffer;
+		return m_Buffer;
 	}
 	inline BYTE* GetBufferPtr(UINT offset) {
-		return &buffer[offset];
+		return &m_Buffer[offset];
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -94,28 +103,25 @@ public:
 	// - Return: capacity는 생성 시점에 사용자가 요청한 용량보다 1 바이트 큰 값이다.
 	//			따라서 capacity - 1  을 반환한다.
 	inline UINT	GetBufferSize(void) const {
-		return capacity;
+		return m_Capacity;
 	}
 	////////////////////////////////////////////////////////////////////////////////////////
 	// - Desc: 현재 사용중인 용량 얻기.
 	inline UINT	GetUseSize(void) const {
-		if (enqOffset >= deqOffset) {
-			return enqOffset - deqOffset;
+		if (m_EnqOffset >= m_DeqOffset) {
+			return m_EnqOffset - m_DeqOffset;
 		}
 		else {
 			//return enqOffset + (capacity - deqOffset);
-			return enqOffset + (internalCapacity - deqOffset);
+			return m_EnqOffset + (m_InternalCapacity - m_DeqOffset);
 		}
 	}
 	////////////////////////////////////////////////////////////////////////////////////////
 	// 현재 버퍼에 남은 용량 얻기. 
 	inline UINT	GetFreeSize(void) const {
-		return capacity - GetUseSize();
+		return m_Capacity - GetUseSize();
 	}
 	////////////////////////////////////////////////////////////////////////////////////////
-
-	
-
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	// 버퍼 포인터로 외부에서 한방에 읽고, 쓸 수 있는 길이. (끊기지 않은 길이)
@@ -125,26 +131,29 @@ public:
 	// - Parameters: 없음.
 	// - Return: (UINT)사용가능 용량.
 	inline UINT	GetDirectEnqueueSize(void) {
-		if (deqOffset == 0) {
-			return (internalCapacity - 1) - enqOffset;
+		if (m_DeqOffset == 0) {
+			return (m_Capacity) - m_EnqOffset;				// capacity: 7
+															// enqOffset: 7 
+															// => enqueue 불가
 		}
 		else {
-			if (enqOffset >= deqOffset) {
-				//return capacity - enqOffset;
-				return internalCapacity - enqOffset;
+			if (m_EnqOffset >= m_DeqOffset) {
+				return m_InternalCapacity - m_EnqOffset;	// ""
+															// ""
+															// => enqueue 가능
 			}
 			else {
-				return deqOffset - enqOffset - 1;
+				return m_DeqOffset - m_EnqOffset - 1;
 			}
 		}
 	}
 	////////////////////////////////////////////////////////////////////////////////////////
 	inline UINT	GetDirectDequeueSize(void) {
-		if (enqOffset >= deqOffset) {
-			return enqOffset - deqOffset;
+		if (m_EnqOffset >= m_DeqOffset) {
+			return m_EnqOffset - m_DeqOffset;
 		}
 		else {
-			return internalCapacity - deqOffset;
+			return m_InternalCapacity - m_DeqOffset;
 		}
 	}
 	
@@ -152,19 +161,19 @@ public:
 	// Parameters: 없음.
 	// Return: (BYTE *) 버퍼 포인터.
 	inline BYTE* GetEnqueueBufferPtr(void) {
-		return &buffer[enqOffset];
+		return &m_Buffer[m_EnqOffset];
 	}
 	inline void* GetEnqueueBufferVoidPtr(void) {
-		return reinterpret_cast<void*>(&buffer[enqOffset]);
+		return reinterpret_cast<void*>(&m_Buffer[m_EnqOffset]);
 	}
 	// 버퍼의 RearPos 포인터 얻음.
 	// Parameters: 없음.
 	// Return: (BYTE *) 버퍼 포인터.
 	inline BYTE* GetDequeueBufferPtr(void) {
-		return &buffer[deqOffset];
+		return &m_Buffer[m_DeqOffset];
 	}
 	inline void* GetDequeueBufferVoidPtr(void) {
-		return reinterpret_cast<void*>(&buffer[deqOffset]);
+		return reinterpret_cast<void*>(&m_Buffer[m_DeqOffset]);
 	}
 
 
@@ -179,30 +188,14 @@ public:
 		UINT enqueueSize = (freeSize >= uiSize) ? uiSize : freeSize;	// 실 enqueue 크기
 		UINT dirEnqueueSize = GetDirectEnqueueSize();
 
-		//if (dirEnqueueSize >= enqueueSize) {
-		//	memcpy(GetEnqueueBufferPtr(), data, enqueueSize);
-		//	enqOffset = (enqOffset + enqueueSize) % (capacity + 1);
-		//	if (enqOffset == capacity && deqOffset != 0) {
-		//		enqOffset = 0;
-		//	}
-		//}
-		//else {
-		//	memcpy(GetEnqueueBufferPtr(), data, dirEnqueueSize);
-		//	memcpy(buffer, &data[dirEnqueueSize], enqueueSize - dirEnqueueSize);
-		//	enqOffset = enqueueSize - dirEnqueueSize;
-		//	if (enqOffset == 0) {
-		//		deqOffset = 0;
-		//	}
-		//}
-
 		if (dirEnqueueSize >= enqueueSize) {
 			memcpy(GetEnqueueBufferPtr(), data, enqueueSize);
 		}
 		else {
 			memcpy(GetEnqueueBufferPtr(), data, dirEnqueueSize);
-			memcpy(buffer, &data[dirEnqueueSize], enqueueSize - dirEnqueueSize);
+			memcpy(m_Buffer, &data[dirEnqueueSize], enqueueSize - dirEnqueueSize);
 		}
-		enqOffset = (enqOffset + enqueueSize) % internalCapacity;
+		m_EnqOffset = (m_EnqOffset + enqueueSize) % m_InternalCapacity;
 
 		return enqueueSize;
 	}
@@ -220,63 +213,24 @@ public:
 		UINT dequeueSize = (useSize >= uiSize) ? uiSize : useSize;
 		UINT dirDequeueSize = GetDirectDequeueSize();
 
-		//if (dirDequeueSize >= moveSize) {
-		//	memcpy(dest, GetDequeueBufferPtr(), moveSize);
-		//	//#ifdef _DEBUG
-		//	//			memset(GetDequeueBufferPtr(), 0xff, dequeueSize);
-		//	//#endif // DEBUG
-		//	
-		//	deqOffset = (deqOffset + moveSize) % (capacity + 1);
-		//	if (deqOffset == capacity) {
-		//		if (enqOffset == capacity) {
-		//			enqOffset = 0;
-		//		}
-		//		deqOffset = 0;
-		//	}
-		//	//if (deqOffset == capacity && enqOffset == capacity) {
-		//	//	enqOffset = 0;
-		//	//	deqOffset = 0;
-		//	//}
-		//}
-		//else {
-		//	memcpy(dest, GetDequeueBufferPtr(), dirDequeueSize);
-		//	//#ifdef _DEBUG
-		//	//			memset(GetDequeueBufferPtr(), 0xff, dirDequeueSize);
-		//	//#endif // DEBUG
-		//	memcpy(&dest[dirDequeueSize], buffer, moveSize - dirDequeueSize);
-		//	//#ifdef _DEBUG
-		//	//			memset(buffer, 0xff, dequeueSize - dirDequeueSize);
-		//	//#endif // DEBUG
-		//	deqOffset = moveSize - dirDequeueSize;
-		//	//if (deqOffset == 0) {
-		//	//	enqOffset = 0;
-		//	//}
-		//}
-
 		if (dirDequeueSize >= dequeueSize) {
 			memcpy(dest, GetDequeueBufferPtr(), dequeueSize);
 		}
 		else {
 			memcpy(dest, GetDequeueBufferPtr(), dirDequeueSize);
-			memcpy(&dest[dirDequeueSize], buffer, dequeueSize - dirDequeueSize);
+			memcpy(&dest[dirDequeueSize], m_Buffer, dequeueSize - dirDequeueSize);
 		}
-		deqOffset = (deqOffset + dequeueSize) % internalCapacity;
+		m_DeqOffset = (m_DeqOffset + dequeueSize) % m_InternalCapacity;
 
 #if !defined(JBUFF_DIRPTR_MANUAL_RESET)
-		if (deqOffset == enqOffset) {
-			deqOffset = enqOffset = 0;
+		if (m_DeqOffset == m_EnqOffset) {
+			m_DeqOffset = m_EnqOffset = 0;
 		}
-#else
-		//if (enqOffset == deqOffset && enqOffset == capacity) {
-		//	enqOffset = deqOffset = 0;
-		//}
 #endif
 
-		return deqOffset;
+		return m_DeqOffset;
 	}
 	////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	// [Enqueue/Dequeue 포인터 직접 이동]
@@ -288,60 +242,21 @@ public:
 		//UINT moveCnt = uiSize;
 		UINT freeSize = GetFreeSize();
 		UINT moveSize = (freeSize >= uiSize) ? uiSize : freeSize;
-		UINT dirEnqueueSize = GetDirectEnqueueSize();
 
-		//if (dirEnqueueSize >= moveSize) {
-		//	enqOffset = (enqOffset + moveSize) % (capacity + 1);
-		//	if (enqOffset == capacity && deqOffset != 0) {
-		//		enqOffset = 0;
-		//	}
-		//}
-		//else {
-		//	enqOffset = moveSize - dirEnqueueSize;
-		//	if (enqOffset == 0) {
-		//		deqOffset = 0;
-		//	}
-		//}
-
-		enqOffset = (enqOffset + moveSize) % internalCapacity;
+		m_EnqOffset = (m_EnqOffset + moveSize) % m_InternalCapacity;
 
 		return moveSize;
 	}
 	inline UINT	DirectMoveDequeueOffset(UINT uiSize) {
 		UINT useSize = GetUseSize();
 		UINT moveSize = (useSize >= uiSize) ? uiSize : useSize;
-		UINT dirDequeueSize = GetDirectDequeueSize();
 
-		//if (dirDequeueSize >= moveSize) {
-		//	deqOffset = (deqOffset + moveSize) % (capacity + 1);
-		//	if (deqOffset == capacity) {
-		//		if (enqOffset == capacity) {
-		//			enqOffset = 0;
-		//		}
-		//		deqOffset = 0;
-		//	}
-		//	//if (deqOffset == capacity && enqOffset == capacity) {
-		//	//	enqOffset = 0;
-		//	//	deqOffset = 0;
-		//	//}
-		//}
-		//else {
-		//	deqOffset = moveSize - dirDequeueSize;				// <------------- 오류
-		//	//if (deqOffset == 0) {
-		//	//	enqOffset = 0;
-		//	//}
-		//}
-
-		deqOffset = (deqOffset + moveSize) % internalCapacity;
+		m_DeqOffset = (m_DeqOffset + moveSize) % m_InternalCapacity;
 
 #if !defined(JBUFF_DIRPTR_MANUAL_RESET)
-		if (deqOffset == enqOffset) {
-			deqOffset = enqOffset = 0;
+		if (m_DeqOffset == m_EnqOffset) {
+			m_DeqOffset = m_EnqOffset = 0;
 		}
-#else 
-		//if (enqOffset == deqOffset && enqOffset == capacity) {
-		//	enqOffset = deqOffset = 0;
-		//}
 #endif
 
 		return moveSize;
@@ -365,7 +280,7 @@ public:
 		}
 		else {
 			memcpy(dest, GetDequeueBufferPtr(), dirDequeueSize);
-			memcpy(&dest[dirDequeueSize], buffer, peekSize - dirDequeueSize);
+			memcpy(&dest[dirDequeueSize], m_Buffer, peekSize - dirDequeueSize);
 		}
 
 		return peekSize;
@@ -381,10 +296,10 @@ public:
 
 		UINT dirDequeueSize = GetDirectDequeueSize();
 		if (dirDequeueSize < offset) {
-			memcpy(dest, buffer + (offset - dirDequeueSize), uiSize);
+			memcpy(dest, m_Buffer + (offset - dirDequeueSize), uiSize);
 		}
 		else if(dirDequeueSize == offset) {
-			memcpy(dest, buffer, uiSize);
+			memcpy(dest, m_Buffer, uiSize);
 		}
 		else {
 			BYTE* deqPtr = GetDequeueBufferPtr();
@@ -394,7 +309,7 @@ public:
 			else {
 				size_t copySize = dirDequeueSize - offset;
 				memcpy(dest, deqPtr + offset, copySize);
-				memcpy(dest + copySize, buffer, uiSize - copySize);
+				memcpy(dest + copySize, m_Buffer, uiSize - copySize);
 			}
 		}
 
@@ -455,15 +370,143 @@ public:
 	}
 };
 
-class JSerBuffer : public JBuffer
-{
+class JSerialBuffer {
+private:
+	std::list<JBuffer> m_Buffers;
+	std::list<JBuffer>::iterator m_EnqBufferIter;
+	UINT				m_Capacity = 0;
+	UINT				m_UsedSize = 0;
 public:
-	JSerBuffer(JBuffer& ringbuff, UINT length, bool isFull = false)
-		: JBuffer(ringbuff)
-	{
-		isExternalBuffer = true;
-		if (isFull) {
-			enqOffset = (deqOffset + length) % internalCapacity;
+	JSerialBuffer() 
+		: m_EnqBufferIter(m_Buffers.end()), m_Capacity(0), m_UsedSize(0)
+	{}
+	inline UINT GetCapacity() {
+		return m_Capacity;
+	}
+	inline UINT	GetUseSize() {
+		return m_UsedSize;
+	}
+
+	inline bool Serialize(JBuffer& srcBuff, UINT length, bool dequeuing = false) {
+		bool ret = false;
+
+		//JBuffer buff(srcBuff, length, enqueued);
+		JBuffer buff = SliceBuffer(srcBuff, length, dequeuing);
+
+		if (dequeuing) {
+			// 현재 꼬리 버퍼가 인큐 가능 상태라면 추가 불가
+			if (m_EnqBufferIter == m_Buffers.end()) {
+				m_Buffers.push_back(buff);
+				m_UsedSize += length;
+				m_Capacity += length;
+				ret = true;
+			}
 		}
+		else {
+			m_Buffers.push_back(buff);
+			m_Capacity += length;
+
+			// 인큐잉 가능 버퍼 첫 추가
+			if (m_EnqBufferIter == m_Buffers.end()) {
+				m_EnqBufferIter = m_Buffers.begin();
+			}
+			ret = true;
+		}
+
+		return ret;
+	}
+
+	inline bool Enqueue(BYTE* src, UINT length) {
+		BYTE* srcPtr = src;
+		UINT srcLength = length;
+		
+		bool done = false;
+		while (m_EnqBufferIter != m_Buffers.end()) {
+			JBuffer& buff = *m_EnqBufferIter;
+			UINT freeSize = buff.GetFreeSize();
+			if (freeSize >= srcLength) {
+				buff.Enqueue(srcPtr, srcLength);
+				m_UsedSize += srcLength;
+				if (freeSize == srcLength) {
+					m_EnqBufferIter++;
+				}
+
+				done = true;
+				break;
+			}
+			else {
+				buff.Enqueue(srcPtr, freeSize);
+				m_UsedSize += freeSize;
+				srcPtr += freeSize;
+				srcLength -= freeSize;
+				m_EnqBufferIter++;
+			}
+		}
+
+		return done;
+	}
+
+	// 주의: dest 메모리 공간은 반드시 length보다 커야한다. 
+	//		메모리를 넘어가 복사되는 것을 막을 수 없다.
+	inline bool Dequeue(OUT BYTE* dest, UINT length) {
+		BYTE* destPtr = dest;
+		size_t destLength = length;
+
+		bool done = false;
+		std::list<JBuffer>::iterator iter = m_Buffers.begin();
+		while (iter != m_Buffers.end()) {
+			JBuffer& buff = *iter;
+			UINT usedSize = buff.GetUseSize();
+			if (usedSize > destLength) {
+				buff.Dequeue(destPtr, destLength);
+				m_UsedSize -= destLength;
+				m_Capacity -= destLength;
+
+				done = true;
+				break;
+			}
+			else {
+				buff.Dequeue(destPtr, usedSize);
+				m_UsedSize -= usedSize;
+				m_Capacity -= usedSize;
+				destPtr += usedSize;
+				destLength -= usedSize;
+
+				if (iter == m_EnqBufferIter) {
+					break;
+				}
+				else {
+					m_Buffers.pop_front();
+				}
+			}
+
+			iter++;
+		}
+
+		return done;
+	}
+
+	template<typename T>
+	inline JSerialBuffer& operator<<(T& src) {
+		if (m_Capacity - m_UsedSize < sizeof(T)) {
+			throw std::runtime_error("[ERR] JSerialBuffer::operator<< Fail, capacity shortage");
+		}
+		if (!Enqueue(&src, sizeof(T))) {
+			throw std::runtime_error("[ERR] JSerialBuffer::operator<< Fail, capacity shortage");
+		}
+
+		return *this;
+	}
+
+	template<typename T>
+	inline JSerialBuffer& operator>>(OUT T& dest) {
+		if (m_UsedSize > sizeof(T)) {
+			throw std::runtime_error("[ERR] JSerialBuffer::operator>> Fail, used size shortage");
+		}
+		if (!Dequeue(&dest, sizeof(T))) {
+			throw std::runtime_error("[ERR] JSerialBuffer::operator>> Fail, used size shortage");
+		}
+
+		return *this;
 	}
 };
