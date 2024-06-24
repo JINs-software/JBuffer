@@ -509,4 +509,34 @@ public:
 
 		return *this;
 	}
+
+	inline bool Peek(OUT BYTE* dest, UINT length) {
+		BYTE* destPtr = dest;
+		size_t destLength = length;
+
+		bool done = false;
+		std::list<JBuffer>::iterator iter = m_Buffers.begin();
+		while (iter != m_Buffers.end()) {
+			JBuffer& buff = *iter;
+			UINT usedSize = buff.GetUseSize();
+			if (usedSize > destLength) {
+				buff.Peek(destPtr, destLength);
+				done = true;
+				break;
+			}
+			else {
+				buff.Peek(destPtr, usedSize);
+				destPtr += usedSize;
+				destLength -= usedSize;
+
+				if (iter == m_EnqBufferIter) {
+					break;
+				}
+			}
+
+			iter++;
+		}
+
+		return done;
+	}
 };
