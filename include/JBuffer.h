@@ -285,8 +285,6 @@ public:
 
 		return peekSize;
 	}
-	template<typename T>
-	inline UINT	Peek(OUT T* dest) { return Peek(reinterpret_cast<BYTE*>(dest), sizeof(T)); }
 	inline bool	Peek(UINT offset, OUT BYTE* dest, UINT uiSize) {
 		UINT useSize = GetUseSize();
 		UINT neededSize = offset + uiSize;
@@ -315,6 +313,10 @@ public:
 
 		return true;
 	}
+	template<typename T>
+	inline UINT	Peek(OUT T* dest) { return Peek(reinterpret_cast<BYTE*>(dest), sizeof(T)); }
+	template<typename T>
+	inline UINT	Peek(UINT offset, OUT T* dest) { return Peek(offset, reinterpret_cast<BYTE*>(dest), sizeof(T)); }
 	////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -453,8 +455,13 @@ public:
 		size_t destLength = length;
 
 		bool done = false;
-		std::list<JBuffer>::iterator iter = m_Buffers.begin();
-		while (iter != m_Buffers.end()) {
+		std::list<JBuffer>::iterator iter;
+		while (true) {
+			iter = m_Buffers.begin();
+			if (iter == m_Buffers.end()) {
+				break;
+			}
+
 			JBuffer& buff = *iter;
 			UINT usedSize = buff.GetUseSize();
 			if (usedSize > destLength) {
@@ -479,8 +486,6 @@ public:
 					m_Buffers.pop_front();
 				}
 			}
-
-			iter++;
 		}
 
 		return done;
