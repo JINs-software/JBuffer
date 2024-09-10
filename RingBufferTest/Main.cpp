@@ -3,10 +3,7 @@
 #include <ctime>
 #include <vector>
 #include <tchar.h>
-
-//#include "RingBuffer.h"
 #include "JBuffer.h"
-#include "JBufferHandler.h"
 
 int BuffSize = 10000;
 const char TestString[] = "1234567890 abcdefghijklmnopqrstuvwxyz 1234567890 abcdefghijklmnopqrstuvwxyz 12345";
