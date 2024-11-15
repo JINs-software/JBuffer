@@ -127,6 +127,16 @@ public:
 	// 버퍼 포인터로 외부에서 한방에 읽고, 쓸 수 있는 길이. (끊기지 않은 길이)
 	// 원형 큐의 구조상 버퍼의 끝단에 있는 데이터는 끝 -> 처음으로 돌아가서
 	// 2번에 데이터를 얻거나 넣을 수 있음. 이 부분에서 끊어지지 않은 길이를 의미
+
+	/// @ brief 링 구조 버퍼에서 물리적으로 메모리가 끊기는 지점까지 Enqueue 가능 크기 반환
+	/**
+	* @details
+	* GetDirectEnqueue/DequeueSize 함수를 제공하는 이유는 복사 과정을 줄이기 위함이다.
+	* recv 함수를 호출하는 과정을 예로 들면, 일반적으로 복사 받을 지역 버퍼를 전달하고, 
+	* 이 버퍼의 내용을 다시 세션 별 수신 링-버퍼에 복사한다. 2번의 복사 과정이 발생하는 셈이다. 
+	* 복사의 중간 단계의 버퍼를 없애 복사의 횟수를 1회 줄이고자, 링-버퍼의 Enqueue 시작 지점 포인터를 전달하여 링-버퍼의 직접 복사를 유도할 수 있다.
+	* 링-버퍼는 논리적인 구조이고, 실제 메모리 상에는 직렬 상태로 끊기는 지점이 있다. 따라서 이 지점까지의 크기를 인수로 전달하고자 DirectEnq/DeqSize 함수가 제공된다.
+	*/
 	inline UINT	GetDirectEnqueueSize(void) {
 		if (m_DeqOffset == 0) { return (m_Capacity)-m_EnqOffset; }	// capacity: 7 && endOffset: 7 => enqueue X
 		else {														// capacity: 7 && endOffset: 7 => enqueue OK
@@ -134,6 +144,7 @@ public:
 			else { return m_DeqOffset - m_EnqOffset - 1; }
 		}
 	}
+	/// @brief 링 구조 버퍼에서 물리적으로 메모리가 끊기는 지점까지 Dequeue 가능 크기 반환
 	inline UINT	GetDirectDequeueSize(void) {
 		if (m_EnqOffset >= m_DeqOffset) { return m_EnqOffset - m_DeqOffset; }
 		else { return m_InternalCapacity - m_DeqOffset; }
